@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мир и Фракции - MMO Strategic Survival Sandbox</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Impact&family=Unna:wght@400;700&family=Quattrocento+Sans:wght@400;700&family=Liter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #e5e5e5;
+            --accent-danger: #ff4444;
+            --accent-safe: #44ff44;
+            --accent-warning: #ffaa00;
+            --faction-military: #1e3a8a;
+            --faction-scavenger: #92400e;
+            --faction-scientist: #0ea5e9;
+            --faction-nomad: #eab308;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Quattrocento Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
+        .navigation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-family: 'Impact', sans-serif;
+            font-size: 1.5rem;
+            color: var(--accent-danger);
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent-danger);
+        }
+        
+        .hero-section {
+            height: 60vh;
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url('resources/world-map.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-top: 80px;
+        }
+        
+        .hero-content h1 {
+            font-family: 'Impact', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--accent-danger), var(--accent-warning));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-content p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+        }
+        
+        .section {
+            padding: 6rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-family: 'Impact', sans-serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            text-align: center;
+            margin-bottom: 4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .world-section {
+            background: var(--bg-secondary);
+        }
+        
+        .factions-section {
+            background: var(--bg-primary);
+        }
+        
+        .war-section {
+            background: var(--bg-secondary);
+        }
+        
+        .world-architecture {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin-bottom: 4rem;
+        }
+        
+        .architecture-text h3 {
+            font-family: 'Unna', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--accent-danger);
+        }
+        
+        .architecture-text p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hierarchy-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .hierarchy-list li {
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid var(--accent-danger);
+        }
+        
+        .world-map-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .world-map-container img {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border: 2px solid var(--accent-danger);
+        }
+        
+        .factions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        
+        .faction-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .faction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .faction-card.military {
+            border-color: var(--faction-military);
+        }
+        
+        .faction-card.military:hover {
+            border-color: var(--faction-military);
+            box-shadow: 0 20px 40px rgba(30, 58, 138, 0.2);
+        }
+        
+        .faction-card.scavenger {
+            border-color: var(--faction-scavenger);
+        }
+        
+        .faction-card.scavenger:hover {
+            border-color: var(--faction-scavenger);
+            box-shadow: 0 20px 40px rgba(146, 64, 14, 0.2);
+        }
+        
+        .faction-card.scientist {
+            border-color: var(--faction-scientist);
+        }
+        
+        .faction-card.scientist:hover {
+            border-color: var(--faction-scientist);
+            box-shadow: 0 20px 40px rgba(14, 165, 233, 0.2);
+        }
+        
+        .faction-card.nomad {
+            border-color: var(--faction-nomad);
+        }
+        
+        .faction-card.nomad:hover {
+            border-color: var(--faction-nomad);
+            box-shadow: 0 20px 40px rgba(234, 179, 8, 0.2);
+        }
+        
+        .faction-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .faction-title {
+            font-family: 'Impact', sans-serif;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            letter-spacing: 0.1em;
+        }
+        
+        .faction-card.military .faction-title {
+            color: var(--faction-military);
+        }
+        
+        .faction-card.scavenger .faction-title {
+            color: var(--faction-scavenger);
+        }
+        
+        .faction-card.scientist .faction-title {
+            color: var(--faction-scientist);
+        }
+        
+        .faction-card.nomad .faction-title {
+            color: var(--faction-nomad);
+        }
+        
+        .faction-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .faction-traits {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .faction-traits li {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .faction-traits li::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: var(--accent-danger);
+        }
+        
+        .war-mechanics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .war-text h3 {
+            font-family: 'Unna', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--accent-danger);
+        }
+        
+        .war-text p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .siege-steps {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .siege-steps li {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid var(--accent-warning);
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 3rem;
+        }
+        
+        .siege-steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent-warning);
+            color: var(--bg-primary);
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .war-visualization {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+            .world-architecture,
+            .war-mechanics {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .factions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-content">
+            <a href="index.html" class="logo">SURVIVAL MMO</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="gameplay.html">Геймплей</a></li>
+                <li><a href="world.html" class="active">Мир</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>Мир и Фракции</h1>
+            <p>Исследуйте постапокалиптический мир с четырьмя уникальными фракциями</p>
+        </div>
+    </section>
+
+    <!-- World Architecture Section -->
+    <section class="section world-section">
+        <h2 class="section-title fade-in">Архитектура мира</h2>
+        <div class="world-architecture">
+            <div class="architecture-text fade-in">
+                <h3>Иерархия территорий</h3>
+                <p>
+                    Игровой мир состоит из отдельных квадратов (зон), соединенных дорогами. 
+                    Это позволяет динамически подгружать только активные зоны с игроками.
+                </p>
+                <ul class="hierarchy-list">
+                    <li><strong>Квадрат:</strong> Базовая единица территории</li>
+                    <li><strong>Область:</strong> Группа квадратов (3x3)</li>
+                    <li><strong>Регион:</strong> Совокупность областей</li>
+                    <li><strong>Штат:</strong> Крупная территориальная единица</li>
+                    <li><strong>Фракция:</strong> Одна из четырех игровых фракций</li>
+                </ul>
+                <p>
+                    Зоны 1.0-0.1 принадлежат NPC-фракциям и служат безопасными хабами для торговли. 
+                    Зоны 0.0 (Null-Sec) - это дикие земли с полной свободой PvP.
+                </p>
+            </div>
+            <div class="world-map-container fade-in">
+                <img src="resources/world-map.jpg" alt="Карта мира">
+                <p style="margin-top: 1rem; color: var(--text-secondary);">
+                    Интерактивная карта зон безопасности и территориального контроля
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Factions Section -->
+    <section class="section factions-section">
+        <h2 class="section-title fade-in">Фракции</h2>
+        <div class="factions-grid">
+            <div class="faction-card military fade-in" onclick="showFactionDetails('military')">
+                <img src="resources/faction-military.jpg" alt="Военная фракция" class="faction-image">
+                <h3 class="faction-title">Синдикат</h3>
+                <p class="faction-description">
+                    Бывшие военные и силовые структуры, создавшие авторитарное сообщество. 
+                    Ценят дисциплину, порядок и контроль над территориями.
+                </p>
+                <ul class="faction-traits">
+                    <li>Лучшая военная техника и оружие</li>
+                    <li>Организованная система командования</li>
+                    <li>Контроль важных стратегических точек</li>
+                    <li>Жесткая иерархия и дисциплина</li>
+                </ul>
+            </div>
+            
+            <div class="faction-card scavenger fade-in" onclick="showFactionDetails('scavenger')">
+                <img src="resources/faction-scavengers.jpg" alt="Фракция выживших" class="faction-image">
+                <h3 class="faction-title">Скитальцы</h3>
+                <p class="faction-description">
+                    Группы выживших, объединившихся для совместного выживания. 
+                    Мастера импровизации и использования подручных материалов.
+                </p>
+                <ul class="faction-traits">
+                    <li>Уникальные самодельные устройства</li>
+                    <li>Отличные навыки ремонта и модификации</li>
+                    <li>Гибкая тактика и адаптивность</li>
+                    <li>Сильное чувство общности и взаимопомощи</li>
+                </ul>
+            </div>
+            
+            <div class="faction-card scientist fade-in" onclick="showFactionDetails('scientist')">
+                <img src="resources/faction-scientists.jpg" alt="Научная фракция" class="faction-image">
+                <h3 class="faction-title">Просветленные</h3>
+                <p class="faction-description">
+                    Учёные и исследователи, стремящиеся понять природу катастрофы 
+                    и найти способ восстановить цивилизацию.
+                </p>
+                <ul class="faction-traits">
+                    <li>Передовые технологии и оборудование</li>
+                    <li>Уникальные чертежи и разработки</li>
+                    <li>Глубокое понимание мутантов и вирусов</li>
+                    <li>Доступ к экспериментальному оружию</li>
+                </ul>
+            </div>
+            
+            <div class="faction-card nomad fade-in" onclick="showFactionDetails('nomad')">
+                <img src="resources/faction-nomads.jpg" alt="Кочевая фракция" class="faction-image">
+                <h3 class="faction-title">Странники</h3>
+                <p class="faction-description">
+                    Кочевые торговцы и искатели приключений, путешествующие между территориями. 
+                    Связующее звено между различными фракциями.
+                </p>
+                <ul class="faction-traits">
+                    <li>Лучшая торговая сеть и логистика</li>
+                    <li>Мобильные базы и караваны</li>
+                    <li>Широкие связи и информация</li>
+                    <li>Гибкость и способность к быстрой адаптации</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- War Mechanics Section -->
+    <section class="section war-section">
+        <h2 class="section-title fade-in">Клановые войны</h2>
+        <div class="war-mechanics">
+            <div class="war-text fade-in">
+                <h3>Механика осад</h3>
+                <p>
+                    Для атаки вражеской базы необходимо сначала захватить все прилегающие территории. 
+                    Это снимает бонус снижения шума с защищающейся стороны и позволяет атакующей 
+                    использовать громкое оружие без риска коллапса.
+                </p>
+                <ol class="siege-steps">
+                    <li>Захват всех соседних территорий через аванпосты</li>
+                    <li>Установление контроля над дорогами и подходами</li>
+                    <li>Лишение защитников бонуса снижения шума (-20%)</li>
+                    <li>Получение права использования громкого оружия</li>
+                    <li>Основная атака на центральную базу</li>
+                </ol>
+                <p>
+                    Захваченные территории могут содержать Уникальные Точки Интереса 
+                    (пожарные части, госпитали и т.д.), дающие клану-владельцу особые бонусы.
+                </p>
+            </div>
+            <div class="war-visualization fade-in">
+                <h4 style="margin-bottom: 1rem; color: var(--accent-warning);">Схема осадной войны</h4>
+                <div id="siegeVisualization" style="height: 300px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <div style="width: 100px; height: 100px; background: var(--accent-danger); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-weight: bold;">HQ</div>
+                        <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem;">
+                            <div style="width: 60px; height: 60px; background: var(--accent-warning); display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">OUT</div>
+                            <div style="width: 60px; height: 60px; background: var(--accent-warning); display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">OUT</div>
+                            <div style="width: 60px; height: 60px; background: var(--accent-warning); display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">OUT</div>
+                        </div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                            Контроль буферных зон для снижения шума
+                        </p>
+                    </div>
+                </div>
+                <div style="margin-top: 2rem;">
+                    <button onclick="simulateSiege()" style="background: var(--accent-danger); color: white; padding: 0.5rem 1rem; border: none; cursor: pointer; margin-right: 1rem;">
+                        Симулировать осаду
+                    </button>
+                    <button onclick="showStrategicPoints()" style="background: var(--accent-warning); color: var(--bg-primary); padding: 0.5rem 1rem; border: none; cursor: pointer;">
+                        Точки интереса
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeScrollAnimations();
+        });
+
+        // Scroll animations
+        function initializeScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // Faction details
+        function showFactionDetails(faction) {
+            const details = {
+                military: {
+                    name: 'Синдикат',
+                    description: 'Военная фракция с жесткой дисциплиной',
+                    bonus: 'Улучшенное оружие и броня',
+                    territory: 'Северные промышленные районы'
+                },
+                scavenger: {
+                    name: 'Скитальцы',
+                    description: 'Выжившие, мастера импровизации',
+                    bonus: 'Уникальные самодельные устройства',
+                    territory: 'Центральные жилые районы'
+                },
+                scientist: {
+                    name: 'Просветленные',
+                    description: 'Учёные и исследователи',
+                    bonus: 'Передовые технологии',
+                    territory: 'Научные комплексы на востоке'
+                },
+                nomad: {
+                    name: 'Странники',
+                    description: 'Кочевые торговцы',
+                    bonus: 'Лучшая торговля и логистика',
+                    territory: 'Мобильные караваны по всему миру'
+                }
+            };
+
+            const info = details[faction];
+            alert(`${info.name}\n\n${info.description}\n\nБонусы: ${info.bonus}\n\nТерритория: ${info.territory}`);
+        }
+
+        // Siege simulation
+        function simulateSiege() {
+            const steps = [
+                'Фаза 1: Разведка и планирование операции',
+                'Фаза 2: Захват периферийных территорий',
+                'Фаза 3: Установление аванпостов и блокада',
+                'Фаза 4: Лишение защитников бонусов',
+                'Фаза 5: Основная атака на HQ',
+                'Фаза 6: Захват и укрепление территории'
+            ];
+
+            let currentStep = 0;
+            const interval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    console.log(`Осада: ${steps[currentStep]}`);
+                    currentStep++;
+                } else {
+                    clearInterval(interval);
+                    alert('Осада завершена! База захвачена.');
+                }
+            }, 1000);
+        }
+
+        // Strategic points
+        function showStrategicPoints() {
+            const points = [
+                'Пожарная часть - бонус к тушению пожаров',
+                'Госпиталь - ускоренное лечение игроков',
+                'Полиция - дополнительная безопасность',
+                'Склад - увеличенный лимит ресурсов',
+                'Завод - уникальные чертежи для крафта',
+                'Лаборатория - исследования и технологии'
+            ];
+
+            const randomPoints = points.sort(() => 0.5 - Math.random()).slice(0, 3);
+            alert(`Случайные стратегические точки:\n\n${randomPoints.join('\n')}`);
+        }
+
+        // Add hover effects for faction cards
+        document.querySelectorAll('.faction-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                anime({
+                    targets: this,
+                    scale: 1.02,
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            card.addEventListener('mouseleave', function() {
+                anime({
+                    targets: this,
+                    scale: 1,
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

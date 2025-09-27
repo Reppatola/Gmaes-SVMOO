@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMO Strategic Survival Sandbox - Выживание в мире PvPvE</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Impact&family=Unna:wght@400;700&family=Quattrocento+Sans:wght@400;700&family=Liter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #e5e5e5;
+            --accent-danger: #ff4444;
+            --accent-safe: #44ff44;
+            --accent-warning: #ffaa00;
+            --faction-military: #1e3a8a;
+            --faction-scavenger: #92400e;
+            --faction-scientist: #0ea5e9;
+            --faction-nomad: #eab308;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Quattrocento Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
+        .hero-section {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url('resources/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            max-width: 1200px;
+            padding: 0 2rem;
+        }
+        
+        .hero-title {
+            font-family: 'Impact', sans-serif;
+            font-size: clamp(3rem, 8vw, 8rem);
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, var(--accent-danger), var(--accent-warning));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        
+        .hero-subtitle {
+            font-family: 'Unna', serif;
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 4rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--accent-danger), #cc3333);
+            color: white;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 0;
+            font-family: 'Unna', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 68, 68, 0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            padding: 1rem 2.5rem;
+            border: 2px solid var(--text-primary);
+            border-radius: 0;
+            font-family: 'Unna', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+        }
+        
+        .features-section {
+            padding: 8rem 2rem;
+            background: var(--bg-secondary);
+            position: relative;
+        }
+        
+        .section-title {
+            font-family: 'Impact', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            text-align: center;
+            margin-bottom: 5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3rem 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-danger);
+            box-shadow: 0 20px 40px rgba(255, 68, 68, 0.1);
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, var(--accent-danger), var(--accent-warning));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        
+        .feature-title {
+            font-family: 'Unna', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .noise-simulator {
+            padding: 8rem 2rem;
+            background: var(--bg-primary);
+            position: relative;
+        }
+        
+        .simulator-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .simulator-content h2 {
+            font-family: 'Impact', sans-serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+        
+        .simulator-controls {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-group {
+            margin-bottom: 2rem;
+        }
+        
+        .control-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .control-slider {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-danger);
+            cursor: pointer;
+            border-radius: 0;
+        }
+        
+        .threat-visualization {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .threat-meter {
+            width: 200px;
+            height: 200px;
+            margin: 2rem auto;
+            position: relative;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .threat-level-low { border-color: var(--accent-safe); color: var(--accent-safe); }
+        .threat-level-medium { border-color: var(--accent-warning); color: var(--accent-warning); }
+        .threat-level-high { border-color: var(--accent-danger); color: var(--accent-danger); }
+        
+        .cta-section {
+            padding: 8rem 2rem;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+            text-align: center;
+        }
+        
+        .cta-content h2 {
+            font-family: 'Impact', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+        
+        .cta-content p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .particles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .navigation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-family: 'Impact', sans-serif;
+            font-size: 1.5rem;
+            color: var(--accent-danger);
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--accent-danger);
+        }
+        
+        @media (max-width: 768px) {
+            .simulator-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-content">
+            <a href="#" class="logo">SURVIVAL MMO</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="gameplay.html">Геймплей</a></li>
+                <li><a href="world.html">Мир</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="particles-container" id="heroParticles"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">STRATEGIC SURVIVAL</h1>
+            <h2 class="hero-subtitle">MMO Sandbox в мире PvPvE</h2>
+            <p class="hero-description">
+                Гибрид социально-экономической глубины EVE Online с тактическим выживанием Project Zomboid. 
+                Мир живет по законам PvPvE, где игроки борются не только друг с другом, но и с динамической угрозой окружающей среды.
+            </p>
+            <div class="cta-buttons">
+                <a href="gameplay.html" class="btn-primary">Исследовать геймплей</a>
+                <a href="world.html" class="btn-secondary">Узнать о мире</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <h2 class="section-title fade-in">Ключевые Особенности</h2>
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Динамический PvE-мир</h3>
+                <p class="feature-description">
+                    Система «Шума» - любое действие игрока генерирует угрозу. Накопление шума провоцирует волны зомби, 
+                    вплоть до полного захвата территории.
+                </p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🗺️</div>
+                <h3 class="feature-title">Территориальный контроль</h3>
+                <p class="feature-description">
+                    Весь глубинный геймплей происходит в зонах 0.0. Территории могут быть захвачены кланами 
+                    через стратегическое планирование и войны.
+                </p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🔫</div>
+                <h3 class="feature-title">Тактика через управление шумом</h3>
+                <p class="feature-description">
+                    Возможность использовать громкое оружие напрямую зависит от стратегического контроля над прилегающими территориями.
+                </p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💰</div>
+                <h3 class="feature-title">Глубокая экономика</h3>
+                <p class="feature-description">
+                    Все предметы создаются игроками. Смерть ведет к потере экипировки. 
+                    Ресурсы разной ценности распределены по зонам риска.
+                </p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">📈</div>
+                <h3 class="feature-title">Свободная прогрессия</h3>
+                <p class="feature-description">
+                    Прокачка через использование + изучение чертежей по времени. 
+                    Нет линейных уровней - только навыки и знания.
+                </p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">⚔️</div>
+                <h3 class="feature-title">Клановые войны</h3>
+                <p class="feature-description">
+                    Масштабные сражения за территории с осадой баз, стратегическим планированием 
+                    и координацией игроков.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Noise Simulator -->
+    <section class="noise-simulator">
+        <div class="simulator-container">
+            <div class="simulator-content fade-in">
+                <h2>Симулятор системы «Шума»</h2>
+                <p>
+                    Попробуйте управлять уровнем угрозы на территории. Любые действия игроков 
+                    влияют на накопление шума, который привлекает зомби.
+                </p>
+                <div class="simulator-controls">
+                    <div class="control-group">
+                        <label class="control-label">Громкость оружия</label>
+                        <input type="range" class="control-slider" id="weaponNoise" min="0" max="100" value="30">
+                        <span id="weaponValue">30%</span>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Активность игроков</label>
+                        <input type="range" class="control-slider" id="playerActivity" min="0" max="100" value="50">
+                        <span id="activityValue">50%</span>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Буферная зона</label>
+                        <input type="range" class="control-slider" id="bufferZone" min="0" max="100" value="20">
+                        <span id="bufferValue">20%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="threat-visualization fade-in">
+                <h3>Уровень угрозы</h3>
+                <div class="threat-meter" id="threatMeter">
+                    <span id="threatValue">25%</span>
+                </div>
+                <p id="threatDescription">Низкая угроза - одиночные зомби</p>
+                <div id="threatChart" style="height: 200px; margin-top: 2rem;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content fade-in">
+            <h2>Готовы к выживанию?</h2>
+            <p>
+                Присоединяйтесь к нам и станьте частью новой эры MMO игр, 
+                где каждое решение имеет значение, а выживание - это искусство.
+            </p>
+            <div class="cta-buttons">
+                <a href="gameplay.html" class="btn-primary">Изучить геймплей</a>
+                <a href="world.html" class="btn-secondary">Исследовать мир</a>
+            </div>
+        </div>
+    </section>
+
+    <script src="main.js"></script>
+</body>
+</html>

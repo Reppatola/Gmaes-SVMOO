@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Геймплей - MMO Strategic Survival Sandbox</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Impact&family=Unna:wght@400;700&family=Quattrocento+Sans:wght@400;700&family=Liter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #e5e5e5;
+            --accent-danger: #ff4444;
+            --accent-safe: #44ff44;
+            --accent-warning: #ffaa00;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Quattrocento Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
+        .navigation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-family: 'Impact', sans-serif;
+            font-size: 1.5rem;
+            color: var(--accent-danger);
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent-danger);
+        }
+        
+        .hero-section {
+            height: 60vh;
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url('resources/world-map.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-top: 80px;
+        }
+        
+        .hero-content h1 {
+            font-family: 'Impact', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--accent-danger), var(--accent-warning));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-content p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+        }
+        
+        .section {
+            padding: 6rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-family: 'Impact', sans-serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            text-align: center;
+            margin-bottom: 4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .pvpve-section {
+            background: var(--bg-secondary);
+        }
+        
+        .territory-section {
+            background: var(--bg-primary);
+        }
+        
+        .progression-section {
+            background: var(--bg-secondary);
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .content-text h3 {
+            font-family: 'Unna', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--accent-danger);
+        }
+        
+        .content-text p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .content-text ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .content-text li {
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .content-text li::before {
+            content: '▶';
+            color: var(--accent-danger);
+            position: absolute;
+            left: 0;
+        }
+        
+        .interactive-demo {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 400px;
+        }
+        
+        .territory-map {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            margin-bottom: 2rem;
+        }
+        
+        .territory-cell {
+            aspect-ratio: 1;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .territory-safe { background: rgba(68, 255, 68, 0.2); }
+        .territory-warning { background: rgba(255, 170, 0, 0.2); }
+        .territory-danger { background: rgba(255, 68, 68, 0.2); }
+        .territory-null { background: rgba(255, 68, 68, 0.4); }
+        
+        .territory-cell:hover {
+            transform: scale(1.1);
+            border-color: var(--accent-danger);
+        }
+        
+        .skill-tree {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .skill-category {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .skill-category h4 {
+            font-family: 'Unna', serif;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--accent-warning);
+        }
+        
+        .skill-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .skill-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .skill-item:hover {
+            background: var(--accent-danger);
+            transform: translateY(-2px);
+        }
+        
+        .zone-legend {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .territory-map {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-content">
+            <a href="index.html" class="logo">SURVIVAL MMO</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="gameplay.html" class="active">Геймплей</a></li>
+                <li><a href="world.html">Мир</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>Геймплей и Механики</h1>
+            <p>Глубокая система выживания, где каждое решение может быть последним</p>
+        </div>
+    </section>
+
+    <!-- PvPvE Section -->
+    <section class="section pvpve-section">
+        <h2 class="section-title fade-in">Динамический PvPvE мир</h2>
+        <div class="content-grid">
+            <div class="content-text fade-in">
+                <h3>Система "Шума"</h3>
+                <p>
+                    Любое действие игрока в мире генерирует "шум" - невидимую угрозу, которая привлекает зомби. 
+                    Чем громче и активнее игроки, тем выше риск эскалации угрозы.
+                </p>
+                <ul>
+                    <li>20-40%: Одиночные и малые группы зомби</li>
+                    <li>60%: Сильные зомби и специальные типы</li>
+                    <li>80%: Быстрые и живучие мутанты</li>
+                    <li>100%: Коллапс территории с боссами</li>
+                </ul>
+                <p>
+                    Коллапс означает полную блокировку территории на одну неделю реального времени, 
+                    уничтожение всего внутри и переход под контроль зомби.
+                </p>
+            </div>
+            <div class="interactive-demo fade-in">
+                <h4 style="margin-bottom: 1rem; color: var(--accent-warning);">Интерактивная демонстрация угроз</h4>
+                <div id="threatVisualization" style="height: 300px;"></div>
+                <div style="margin-top: 1rem;">
+                    <button onclick="simulateThreatActivity()" style="background: var(--accent-danger); color: white; padding: 0.5rem 1rem; border: none; cursor: pointer;">
+                        Симулировать активность
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Territory Control Section -->
+    <section class="section territory-section">
+        <h2 class="section-title fade-in">Территориальный контроль</h2>
+        <div class="content-grid">
+            <div class="interactive-demo fade-in">
+                <h4 style="margin-bottom: 1rem; color: var(--accent-warning);">Система безопасности зон</h4>
+                <div class="territory-map" id="territoryMap">
+                    <!-- Territory cells will be generated by JavaScript -->
+                </div>
+                <div class="zone-legend">
+                    <div class="legend-item">
+                        <div class="legend-color territory-safe"></div>
+                        <span>Безопасные (1.0-0.8)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color territory-warning"></div>
+                        <span>Предупреждение (0.7-0.4)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color territory-danger"></div>
+                        <span>Опасные (0.3-0.1)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color territory-null"></div>
+                        <span>АД (0.0)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="content-text fade-in">
+                <h3>Null-Sec территории</h3>
+                <p>
+                    Весь глубинный геймплей происходит исключительно в зонах с уровнем безопасности 0.0. 
+                    Это "дикие земли" где царит полная свобода PvP.
+                </p>
+                <ul>
+                    <li>Главная База (HQ): Одна на клан, генерирует +10% шума</li>
+                    <li>Аванпосты (Outpost): Укрепления на соседних территориях, +5% шума</li>
+                    <li>Буферные зоны: Снижают шум на -20% при полном контроле</li>
+                    <li>Многоуровневая защита: Второй пояс территорий дает дополнительное снижение</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progression Section -->
+    <section class="section progression-section">
+        <h2 class="section-title fade-in">Прогрессия и навыки</h2>
+        <div class="content-grid">
+            <div class="content-text fade-in">
+                <h3>Система развития</h3>
+                <p>
+                    Прогрессия основана на использовании навыков и изучении чертежей по времени, 
+                    как в EVE Online. Нет линейных уровней - только практические навыки.
+                </p>
+                <ul>
+                    <li>Боевые навыки: Прокачиваются через combat</li>
+                    <li>Ремесленные навыки: Улучшаются через crafting</li>
+                    <li>Чертежи: Изучаются по времени, открывают мета-уровни</li>
+                    <li>Экономика: Все предметы создаются игроками</li>
+                </ul>
+                <p>
+                    Смерть означает потерю экипировки, что создает реальные риски и стимулирует 
+                    экономическую активность.
+                </p>
+            </div>
+            <div class="interactive-demo fade-in">
+                <h4 style="margin-bottom: 1rem; color: var(--accent-warning);">Древо навыков</h4>
+                <div class="skill-tree">
+                    <div class="skill-category">
+                        <h4>Боевые навыки</h4>
+                        <div class="skill-items">
+                            <div class="skill-item">Огнестрельное оружие</div>
+                            <div class="skill-item">Холодное оружие</div>
+                            <div class="skill-item">Тактика</div>
+                            <div class="skill-item">Выживание</div>
+                        </div>
+                    </div>
+                    <div class="skill-category">
+                        <h4>Ремесленные навыки</h4>
+                        <div class="skill-items">
+                            <div class="skill-item">Крафт оружия</div>
+                            <div class="skill-item">Строительство</div>
+                            <div class="skill-item">Инженерия</div>
+                            <div class="skill-item">Медицина</div>
+                        </div>
+                    </div>
+                    <div class="skill-category">
+                        <h4>Экономические навыки</h4>
+                        <div class="skill-items">
+                            <div class="skill-item">Торговля</div>
+                            <div class="skill-item">Логистика</div>
+                            <div class="skill-item">Управление</div>
+                            <div class="skill-item">Разведка</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeScrollAnimations();
+            initializeTerritoryMap();
+            initializeThreatVisualization();
+        });
+
+        // Scroll animations
+        function initializeScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // Territory map
+        function initializeTerritoryMap() {
+            const mapContainer = document.getElementById('territoryMap');
+            const zones = [
+                'safe', 'safe', 'warning', 'warning', 'danger', 'danger', 'null', 'null',
+                'safe', 'safe', 'warning', 'danger', 'danger', 'null', 'null', 'null',
+                'warning', 'warning', 'warning', 'danger', 'null', 'null', 'null', 'danger',
+                'warning', 'danger', 'danger', 'danger', 'null', 'null', 'danger', 'danger',
+                'danger', 'danger', 'null', 'null', 'null', 'null', 'danger', 'safe',
+                'null', 'null', 'null', 'null', 'null', 'danger', 'safe', 'safe',
+                'null', 'null', 'null', 'danger', 'danger', 'safe', 'safe', 'safe',
+                'danger', 'danger', 'danger', 'danger', 'safe', 'safe', 'safe', 'safe'
+            ];
+
+            zones.forEach((zone, index) => {
+                const cell = document.createElement('div');
+                cell.className = `territory-cell territory-${zone}`;
+                cell.textContent = Math.random() > 0.7 ? '●' : '';
+                cell.title = `Зона ${index + 1} - ${getZoneName(zone)}`;
+                
+                cell.addEventListener('click', () => {
+                    showZoneInfo(zone, index);
+                });
+                
+                mapContainer.appendChild(cell);
+            });
+        }
+
+        function getZoneName(zone) {
+            const names = {
+                'safe': 'Безопасная зона',
+                'warning': 'Зона предупреждения',
+                'danger': 'Опасная зона',
+                'null': 'Ад территория'
+            };
+            return names[zone] || 'Неизвестная зона';
+        }
+
+        function showZoneInfo(zone, index) {
+            const info = {
+                'safe': 'NPC-контролируемая территория с высоким уровнем безопасности. PvP строго карается.',
+                'warning': 'Переходная зона с умеренным уровнем безопасности. Риск PvP повышен.',
+                'danger': 'Зона низкой безопасности с минимальной защитой. Открытый PvP.',
+                'null': 'Дикие земли без всякой защиты. Полная свобода PvP и клановые войны.'
+            };
+            
+            alert(`Зона ${index + 1} (${getZoneName(zone)}):\n\n${info[zone]}`);
+        }
+
+        // Threat visualization
+        function initializeThreatVisualization() {
+            const chartDom = document.getElementById('threatVisualization');
+            const threatChart = echarts.init(chartDom);
+            
+            const option = {
+                backgroundColor: 'transparent',
+                title: {
+                    text: 'Эскалация угрозы',
+                    textStyle: { color: '#fff', fontSize: 16 }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    textStyle: { color: '#fff' }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%'],
+                    axisLine: { lineStyle: { color: '#666' } },
+                    axisLabel: { color: '#999' }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Опасность',
+                    axisLine: { lineStyle: { color: '#666' } },
+                    axisLabel: { color: '#999' },
+                    splitLine: { lineStyle: { color: '#333' } }
+                },
+                series: [{
+                    data: [1, 3, 6, 8, 10],
+                    type: 'bar',
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = ['#44ff44', '#ffaa00', '#ff4444', '#ff2222', '#ff0000'];
+                            return colors[params.dataIndex];
+                        }
+                    }
+                }]
+            };
+            
+            threatChart.setOption(option);
+        }
+
+        function simulateThreatActivity() {
+            const activities = [
+                'Игрок использует тихое оружие (+5% шума)',
+                'Группа игроков строит базу (+15% шума)',
+                'Крупная перестрелка (+35% шума)',
+                'Использование взрывчатки (+50% шума)',
+                'Тихое исследование (+2% шума)'
+            ];
+            
+            const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+            alert(`Симуляция активности:\n\n${randomActivity}\n\nУровень угрозы изменился!`);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const threatChart = echarts.getInstanceByDom(document.getElementById('threatVisualization'));
+            if (threatChart) {
+                threatChart.resize();
+            }
+        });
+    </script>
+</body>
+</html>
